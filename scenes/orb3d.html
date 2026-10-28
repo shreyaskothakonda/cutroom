@@ -1,0 +1,108 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="lib/base.css">
+<style>
+  canvas { position: absolute; left: 0; top: 0; width: var(--w); height: var(--h); }
+  .rs-stage { gap: calc(var(--u) * 2.2); justify-content: center; }
+  .rs-headline { font-size: calc(var(--u) * 7.4); max-width: 12ch; }
+  .rs-sub { max-width: 26ch; }
+  .portrait .rs-stage { justify-content: flex-start; }
+  .portrait .rs-headline { font-size: calc(var(--u) * 9.6); max-width: 14ch; }
+</style>
+<script type="importmap">{ "imports": { "three": "../vendor/node_modules/three/build/three.module.js" } }</script>
+<script src="lib/runtime.js"></script>
+<script src="../vendor/node_modules/gsap/dist/gsap.min.js"></script>
+</head><body>
+<canvas data-qa="canvas" data-layer="bg"></canvas>
+<div class="rs-stage">
+  <div class="rs-kicker" data-qa="kicker"></div>
+  <h2 class="rs-headline" data-qa="headline"></h2>
+  <p class="rs-sub" data-qa="sub"></p>
+</div>
+<script type="module">
+  import * as THREE from 'three';
+  const P = RS.params;
+  const S = RS.scene;
+  const $ = (s) => document.querySelector(s);
+  $('.rs-kicker').textContent = P.kicker || '';
+  $('.rs-headline').textContent = P.headline || '';
+  $('.rs-sub').textContent = P.sub || '';
+  const css = getComputedStyle(document.documentElement);
+  const accent = new THREE.Color((P.color || css.getPropertyValue('--accent')).trim());
+  const accent2 = new THREE.Color(css.getPropertyValue('--accent-2').trim());
+
+  const renderer = new THREE.WebGLRenderer({ canvas: $('canvas'), antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1);
+  renderer.setSize(S.width, S.height, false);
+  renderer.setClearColor(0x0b0d12, 1);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+  const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, S.width / S.height, 0.1, 100);
+  camera.position.set(0, 0, RS.portrait ? 13 : 8);
+  scene.fog = new THREE.Fog(0x0b0d12, camera.position.z - 1, camera.position.z + 9);
+
+  // The orb sits right of the text in 16:9 and below it in 9:16.
+  const group = new THREE.Group();
+  group.position.set(RS.portrait ? 0 : 1.9, RS.portrait ? -0.7 : 0, 0);
+  scene.add(group);
+
+  const geo = new THREE.IcosahedronGeometry(1.6, 24);
+  const base = geo.attributes.position.array.slice();
+  const mat = new THREE.MeshPhysicalMaterial({ color: accent, roughness: 0.25, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.15, flatShading: false });
+  const orb = new THREE.Mesh(geo, mat);
+  group.add(orb);
+  const wire = new THREE.Mesh(new THREE.IcosahedronGeometry(2.25, 2), new THREE.MeshBasicMaterial({ color: accent2, wireframe: true, transparent: true, opacity: 0.25 }));
+  group.add(wire);
+
+  // A ring of particles, seeded so every render is identical.
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const N = 900, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const a = rand() * Math.PI * 2, r = 2.8 + rand() * 1.6, y = (rand() - 0.5) * 0.6;
+    pos.set([Math.cos(a) * r, y, Math.sin(a) * r], i * 3);
+  }
+  const pg = new THREE.BufferGeometry();
+  pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const ring = new THREE.Points(pg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.03, transparent: true, opacity: 0.8 }));
+  ring.rotation.x = 0.35;
+  group.add(ring);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 4, 5); scene.add(key);
+  const rim = new THREE.PointLight(accent2, 40, 20); rim.position.set(-4, -2, 2); scene.add(rim);
+  const warm = new THREE.PointLight(0xff7a59, 25, 20); warm.position.set(4, -3, -2); scene.add(warm);
+
+  // Smooth surface wobble from layered sines, a function of t only.
+  const v = new THREE.Vector3();
+  function wobble(t) {
+    const arr = geo.attributes.position.array;
+    for (let i = 0; i < arr.length; i += 3) {
+      v.set(base[i], base[i + 1], base[i + 2]).normalize();
+      const d = 0.035 * Math.sin(v.x * 4.1 + t * 1.3) + 0.03 * Math.sin(v.y * 5.3 - t * 1.1) + 0.025 * Math.sin(v.z * 6.2 + t * 0.9);
+      const k = 1 + d;
+      arr[i] = base[i] * k; arr[i + 1] = base[i + 1] * k; arr[i + 2] = base[i + 2] * k;
+    }
+    geo.attributes.position.needsUpdate = true;
+    geo.computeVertexNormals();
+  }
+
+  const intro = RS.timeline();
+  intro.from(group.scale, { x: 0.01, y: 0.01, z: 0.01, duration: 1.2, ease: 'expo.out' }, 0)
+    .from('.rs-kicker', { y: 16, opacity: 0, duration: 0.5 }, 0.3)
+    .from(RS.splitWords($('.rs-headline')), { y: 40, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.06 }, 0.4)
+    .from('.rs-sub', { y: 20, opacity: 0, duration: 0.6 }, 0.9);
+
+  RS.onFrame((t) => {
+    wobble(t);
+    orb.rotation.set(t * 0.25, t * 0.4, 0);
+    wire.rotation.set(-t * 0.15, -t * 0.22, 0);
+    ring.rotation.y = t * 0.18;
+    camera.position.x = Math.sin(t * 0.3) * 0.4;
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  });
+  RS.start();
+</script>
+</body></html>

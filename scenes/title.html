@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="lib/base.css">
+<style>
+  .rs-stage { gap: calc(var(--u) * 2.6); }
+  .rs-headline { max-width: 16ch; }
+  .rule { height: calc(var(--u) * 0.5); width: calc(var(--u) * 14); background: var(--accent); transform-origin: left; }
+</style>
+<script src="lib/runtime.js"></script>
+<script src="../vendor/node_modules/gsap/dist/gsap.min.js"></script>
+<script src="lib/ambient.js"></script>
+</head><body>
+<div class="rs-bg" data-qa="bg" data-layer="bg"></div>
+<div class="rs-stage">
+  <div class="rs-kicker" data-qa="kicker"></div>
+  <h1 class="rs-headline" data-qa="headline"></h1>
+  <div class="rule"></div>
+  <p class="rs-sub" data-qa="sub"></p>
+</div>
+<script>
+  const P = RS.params;
+  const $ = (s) => document.querySelector(s);
+  rsAmbient($('.rs-bg'));
+  $('.rs-kicker').textContent = P.kicker || '';
+  $('.rs-headline').textContent = P.headline || '';
+  $('.rs-sub').textContent = P.sub || '';
+  const words = RS.splitWords($('.rs-headline'));
+  const tl = RS.timeline();
+  tl.from('.rs-kicker', { y: 20, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0.15)
+    .from(words, { yPercent: 110, opacity: 0, rotate: 4, duration: 0.8, ease: 'power4.out', stagger: 0.07 }, 0.3)
+    .from('.rule', { scaleX: 0, duration: 0.8, ease: 'expo.out' }, 0.7)
+    .from('.rs-sub', { y: 24, opacity: 0, duration: 0.7, ease: 'power3.out' }, 0.9)
+    .to('.rs-stage', { scale: 1.03, duration: RS.duration, ease: 'none' }, 0);
+  RS.start();
+</script>
+</body></html>

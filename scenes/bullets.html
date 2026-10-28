@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="lib/base.css">
+<style>
+  .rs-stage { gap: calc(var(--u) * 3.2); }
+  h2 { font-size: calc(var(--u) * 6); font-weight: 800; letter-spacing: -0.025em; line-height: 1.05; max-width: 20ch; }
+  .portrait h2 { font-size: calc(var(--u) * 8); }
+  ol { list-style: none; display: grid; gap: calc(var(--u) * 1.8); counter-reset: n; }
+  li { counter-increment: n; display: grid; grid-template-columns: calc(var(--u) * 6) 1fr; align-items: baseline;
+    font-size: calc(var(--u) * 3.6); line-height: 1.2; font-weight: 600; padding-bottom: calc(var(--u) * 1.6);
+    border-bottom: 1px solid rgba(255,255,255,.12); }
+  .portrait li { font-size: calc(var(--u) * 5); grid-template-columns: calc(var(--u) * 8) 1fr; }
+  li::before { content: counter(n, decimal-leading-zero); font: 500 calc(var(--u) * 2)/1 var(--mono); color: var(--accent); }
+  .portrait li::before { font-size: calc(var(--u) * 2.8); }
+</style>
+<script src="lib/runtime.js"></script>
+<script src="../vendor/node_modules/gsap/dist/gsap.min.js"></script>
+<script src="lib/ambient.js"></script>
+</head><body>
+<div class="rs-bg" data-qa="bg" data-layer="bg"></div>
+<div class="rs-stage">
+  <div class="rs-kicker" data-qa="kicker"></div>
+  <h2 data-qa="heading"></h2>
+  <ol data-qa="list"></ol>
+</div>
+<script>
+  const P = RS.params;
+  const $ = (s) => document.querySelector(s);
+  rsAmbient($('.rs-bg'));
+  $('.rs-kicker').textContent = P.kicker || '';
+  $('h2').textContent = P.heading || '';
+  (P.items || []).forEach((t) => { const li = document.createElement('li'); li.textContent = t; $('ol').appendChild(li); });
+  const items = [...document.querySelectorAll('li')];
+  // Spread the items across the narration so each lands near when it is spoken.
+  const span = Math.max(1.2, RS.duration * 0.62);
+  const tl = RS.timeline();
+  tl.from('.rs-kicker', { y: 16, opacity: 0, duration: 0.5 }, 0.1)
+    .from('h2', { y: 30, opacity: 0, duration: 0.7, ease: 'power3.out' }, 0.2);
+  items.forEach((li, i) => {
+    tl.from(li, { x: -40, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0.8 + (span * i) / Math.max(1, items.length));
+  });
+  RS.start();
+</script>
+</body></html>

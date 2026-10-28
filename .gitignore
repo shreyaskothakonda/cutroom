@@ -1,0 +1,18 @@
+.venv/
+vendor/node_modules/
+runs/
+__pycache__/
+*.pyc
+.DS_Store
+*.egg-info/
+# Model weights and caches
+*.pt
+*.pth
+*.onnx
+*.safetensors
+.cache/
+models/
+# Rendered output and scratch
+captures/
+*.mp4
+*.wav

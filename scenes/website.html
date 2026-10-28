@@ -1,0 +1,65 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="lib/base.css">
+<style>
+  .rs-stage { gap: calc(var(--u) * 2.4); align-items: center; }
+  .label { align-self: stretch; display: flex; align-items: baseline; justify-content: space-between; gap: calc(var(--u) * 2); }
+  .label h2 { font-size: calc(var(--u) * 4.6); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+  .portrait .label { flex-direction: column; align-items: flex-start; }
+  .portrait .label h2 { font-size: calc(var(--u) * 6.4); }
+  .browser {
+    flex: 1; min-height: 0; width: 100%; border-radius: calc(var(--u) * 1.4); overflow: hidden;
+    background: #fff; box-shadow: 0 calc(var(--u) * 3) calc(var(--u) * 8) rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08);
+    display: flex; flex-direction: column;
+  }
+  .chrome { height: calc(var(--u) * 4.6); flex: none; background: #1d212c; display: flex; align-items: center; gap: calc(var(--u) * 0.9); padding: 0 calc(var(--u) * 1.6); }
+  .dot { width: calc(var(--u) * 1.2); height: calc(var(--u) * 1.2); border-radius: 50%; background: #ff5f57; }
+  .dot:nth-child(2) { background: #febc2e; } .dot:nth-child(3) { background: #28c840; }
+  .url { margin-left: calc(var(--u) * 1.2); flex: 1; height: calc(var(--u) * 2.8); border-radius: 99px; background: #2a2f3c; color: #c9cedb;
+    font: calc(var(--u) * 1.5)/calc(var(--u) * 2.8) var(--mono); padding: 0 calc(var(--u) * 1.6); white-space: nowrap; overflow: hidden; }
+  .viewport { position: relative; flex: 1; overflow: hidden; background: #fff; }
+  .viewport img { position: absolute; left: 0; top: 0; width: 100%; transform-origin: 0 0; }
+  .cursor { position: absolute; width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.6); left: 0; top: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+</style>
+<script src="lib/runtime.js"></script>
+<script src="../vendor/node_modules/gsap/dist/gsap.min.js"></script>
+<script src="lib/ambient.js"></script>
+</head><body>
+<div class="rs-bg" data-qa="bg" data-layer="bg"></div>
+<div class="rs-stage">
+  <div class="label"><span class="rs-kicker" data-qa="kicker"></span><h2 data-qa="title"></h2></div>
+  <div class="browser" data-qa="browser">
+    <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div class="url"></div></div>
+    <div class="viewport"><img alt="">
+      <svg class="cursor" viewBox="0 0 24 24"><path d="M3 2l7 19 2.5-7.5L20 11z" fill="#111" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+</div>
+<script>
+  const P = RS.params;
+  const $ = (s) => document.querySelector(s);
+  rsAmbient($('.rs-bg'));
+  $('.rs-kicker').textContent = P.kicker || '';
+  $('.label h2').textContent = P.title || '';
+  $('.url').textContent = (P.url || '').replace(/^https?:\/\//, '');
+  const img = $('.viewport img');
+  // Portrait uses the phone capture when there is one, so text stays readable.
+  img.src = (RS.portrait && P.image_mobile) || P.image;
+  RS.wait(img.decode().then(() => {
+    const vp = $('.viewport');
+    const scale = vp.clientWidth / img.naturalWidth;
+    const pageH = img.naturalHeight * scale;
+    const maxScroll = Math.max(0, pageH - vp.clientHeight);
+    const scroll = Math.min(maxScroll, (P.scroll ?? 0.6) * maxScroll);
+    const tl = RS.timeline();
+    const D = RS.duration;
+    tl.from('.label', { y: 20, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0.1)
+      .from('.browser', { y: 60, opacity: 0, scale: 0.96, duration: 0.9, ease: 'power3.out' }, 0)
+      .fromTo(img, { y: 0, scale }, { y: -scroll, scale, duration: Math.max(1, D - 1.8), ease: 'power2.inOut' }, 0.9)
+      .fromTo('.cursor', { x: vp.clientWidth * 0.7, y: vp.clientHeight * 0.75, opacity: 0 },
+        { x: vp.clientWidth * 0.42, y: vp.clientHeight * 0.38, opacity: 1, duration: 1.4, ease: 'power2.inOut' }, 0.6)
+      .to('.cursor', { x: vp.clientWidth * 0.55, y: vp.clientHeight * 0.55, duration: D - 2.2, ease: 'sine.inOut' }, 2.0);
+  }));
+  RS.start();
+</script>
+</body></html>

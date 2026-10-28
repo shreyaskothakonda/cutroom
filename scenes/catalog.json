@@ -1,0 +1,57 @@
+{
+  "title": {
+    "use": "Opening card. Big headline with a short line under it.",
+    "params": {
+      "kicker": "2 to 4 words, shown small above the headline",
+      "headline": "3 to 7 words",
+      "sub": "optional, one short sentence"
+    },
+    "assets": []
+  },
+  "website": {
+    "use": "A real website shown in a browser frame, scrolling down the page. Use when the story is about a site, product or page.",
+    "params": {
+      "kicker": "2 to 4 words",
+      "title": "3 to 6 words naming what we are looking at",
+      "url": "the page URL",
+      "scroll": "0 to 1, how far down the page to scroll (default 0.6)"
+    },
+    "assets": [{ "kind": "capture", "url": "same as params.url", "as": "image" }]
+  },
+  "photo": {
+    "use": "Full bleed stock photo with a slow push in and a headline. Use for real world context: people, places, objects.",
+    "params": {
+      "kicker": "2 to 4 words",
+      "headline": "3 to 7 words",
+      "focus": "optional [x, y] in 0..1, where the subject is"
+    },
+    "assets": [{ "kind": "stock", "query": "2 to 4 concrete visual words, no abstract ideas", "as": "image" }]
+  },
+  "orb3d": {
+    "use": "A glossy 3D object in motion next to a headline. Use for abstract ideas, a big claim, or a change of pace.",
+    "params": {
+      "kicker": "2 to 4 words",
+      "headline": "3 to 6 words",
+      "sub": "optional, one short sentence",
+      "color": "optional hex colour for the object"
+    },
+    "assets": []
+  },
+  "bullets": {
+    "use": "A heading and 2 to 4 numbered points revealed one by one. Use for lists, steps or reasons.",
+    "params": {
+      "kicker": "2 to 4 words",
+      "heading": "3 to 7 words",
+      "items": "2 to 4 strings, each under 6 words"
+    },
+    "assets": []
+  },
+  "outro": {
+    "use": "Closing card with a headline and a call to action pill.",
+    "params": {
+      "headline": "3 to 6 words",
+      "cta": "optional, a URL or 2 to 4 words"
+    },
+    "assets": []
+  }
+}

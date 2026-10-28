@@ -1,0 +1,13 @@
+# A brief is all the LLM agents need. Everything after planning is local tools.
+topic: Why Python is a great first programming language
+audience: Curious adults who have never written code
+length_seconds: 30
+tone: Friendly, plain, confident. Like a good teacher.
+must_include:
+  - Show the official site at https://www.python.org
+  - One real world photo of someone learning to code
+formats: [16x9, 9x16]
+voice:
+  engine: kokoro
+  voice: af_heart
+  speed: 1.0

@@ -1,0 +1,10 @@
+{
+  "name": "cutroom-vendor",
+  "private": true,
+  "description": "Browser libraries served to scene pages",
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "three": "^0.186.1"
+  },
+  "author": "Shreyas Kothakonda <hello@shreyas.live>"
+}
